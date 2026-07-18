@@ -102,15 +102,40 @@
     </div>
 
   </div>  
+  <!-- Load Leaflet CSS and JS for a completely free map API -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
   <script>
-   let mapToken = "<%= process.env.MAP_TOKEN %>";
-   console.log(mapToken);
-    mapboxgl.accessToken = mapToken;
-      const map = new mapboxgl.Map({
-          container: 'map', // container ID
-          style:"mapbox://styles/mapbox/streets-v12",
-          center: [-74.5, 40], // starting position [lng, lat]. Note that lat must be set between -90 and 90
-          zoom: 9 // starting zoom
+    // Initialize Leaflet Map
+    const map = L.map('map').setView([20.5937, 78.9629], 5); // Default center (India)
+    
+    // Add Free OpenStreetMap Tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    // Using Nominatim (OpenStreetMap) Free Geocoding API to fetch the exact location
+    let address = "<%= listing.location %>, <%= listing.country %>";
+    
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+      .then(response => response.json())
+      .then(data => {
+          if (data && data.length > 0) {
+              let lat = parseFloat(data[0].lat);
+              let lon = parseFloat(data[0].lon);
+              
+              // Move map to the exact location
+              map.setView([lat, lon], 13);
+              
+              // Add a marker
+              L.marker([lat, lon]).addTo(map)
+                  .bindPopup(`<b><%= listing.title %></b><br>Exact Location: <%= listing.location %>, <%= listing.country %>`)
+                  .openPopup();
+          }
+      })
+      .catch(err => {
+          console.error("Error fetching location:", err);
       });
   </script>
 
