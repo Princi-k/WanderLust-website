@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const initData = require("./data.js");
 const Listing = require("../models/Listing.js");
 
-const Mongoose_URL = "mongodb://127.0.0.1:27017/Wanderlust";
+const Mongoose_URL = process.env.ATLASDB;
 
 main().then(() =>{
     console.log("Database is connected.");
